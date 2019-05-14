@@ -9,15 +9,32 @@ The areas we plan to explore are:
 - Infrastructure deployment
 - CICD integration across the entire stack
 
+## Stack Tech
+- Application
+  - PostgreSQL
+  - GoLang API
+  - React/Angular/?
+  - Logging
+- Infrastructure
+  - Tools:
+    - Terraform
+    - Ansible / [Cloud init](https://cloudinit.readthedocs.io/en/latest/) / ?
+  - Monitoring
+    - Datadog, ?
+  - Logging
+  - Secrets Management
+  - Notifications
 
 ## Database
 - Dataset
   - https://github.com/jldbc/coffee-quality-database
 - To do:
-  - [x] Pull dataset into repo
+  - [ ] Pull dataset into repo
   - [ ] Create a database schema for the dataset
-    - indexs, foreign keys, etc
-  - [ ]Create dockerfile with postgres and libraries
+    - indexes, foreign keys, etc
+    - https://dbdiagram.io/
+  - [ ] Create makefile for running various commands
+  - [ ] Create dockerfile with postgres and libraries
   - [ ] Script to:
     - [ ] build the database and tables
     - [ ] import the data
