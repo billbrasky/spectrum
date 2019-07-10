@@ -7,8 +7,8 @@ variety
 expiration
 grading_date
 harvest_year i
-cupping_id i f
-green_id i f
+review_cupping_id i f
+review_green_id i f
 farm_id i f
 #review_cupping
 id i p
@@ -36,7 +36,7 @@ owner
 owner_1
 company
 country
-cert_id i f
+certificate_id i f
 name
 ico i
 country_partner
