@@ -1,11 +1,6 @@
 import csv, re
-
-
-
-
-def writetable():
-    pass
-
+import psycopg2 as pg
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 def checktype( s ):
 
@@ -45,12 +40,26 @@ def writetable( tn, td ):
 
     return res
 
+
+def writeforeignkey( items ):
+
+    template = '\n\nALTER TABLE "{0}" ADD FOREIGN KEY ("{1}") REFERENCES "{2}" ("id");'
+    res = ''
+    for item in items:
+        tablename, fk = item
+
+        res += template.format( tablename, fk, fk[:-3] )
+
+    return res
+
+
+#main
 with open( 'dataplan.txt', 'r' ) as f:
 
     tablename = None
     tabledata = []
     output = ''
-
+    foreignkeys = []
     for line in f:
         
         line = line.strip()
@@ -71,6 +80,11 @@ with open( 'dataplan.txt', 'r' ) as f:
 
         vardef = '\t"{}" '.format( thing[0] )
 
+        # foreign key
+        if 'f' in thing:
+            foreignkeys.append( (tablename, thing[0]) )
+            thing.remove( 'f' )
+
         if len( thing ) == 3:
             vardef += checktype( thing[1] ) + ' ' + checkrule( thing[2] )
 
@@ -83,4 +97,7 @@ with open( 'dataplan.txt', 'r' ) as f:
 
         tabledata.append( vardef )
 
+    output += writeforeignkey( foreignkeys )
+#    print( output )
 
+conn = pg.connect( 'dbname=coffee user=' )
