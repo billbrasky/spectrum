@@ -1,4 +1,5 @@
 import csv, re
+<<<<<<< HEAD
 import yaml
 
 
@@ -6,6 +7,10 @@ import yaml
 def writetable():
     pass
 
+=======
+import psycopg2 as pg
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+>>>>>>> a0047dfd2a439715c3b53933ce91d0d6796278ef
 
 def checktype( s ):
 
@@ -45,6 +50,7 @@ def writetable( tn, td ):
 
     return res
 
+<<<<<<< HEAD
 with open( 'dataplan.yml', 'r' ) as f:
 
     data = yaml.load( f )
@@ -57,6 +63,29 @@ for tablename, table in tables.items():
     td = []
     for columnname, column in table.items():
         text = '\t{0} {1}'.format( columnname, column['type'] )
+=======
+
+def writeforeignkey( items ):
+
+    template = '\n\nALTER TABLE "{0}" ADD FOREIGN KEY ("{1}") REFERENCES "{2}" ("id");'
+    res = ''
+    for item in items:
+        tablename, fk = item
+
+        res += template.format( tablename, fk, fk[:-3] )
+
+    return res
+
+
+#main
+with open( 'dataplan.txt', 'r' ) as f:
+
+    tablename = None
+    tabledata = []
+    output = ''
+    foreignkeys = []
+    for line in f:
+>>>>>>> a0047dfd2a439715c3b53933ce91d0d6796278ef
         
         isprimary = column.get( 'pk', False )
         isforeign = column.get( 'fk', False )
@@ -70,7 +99,17 @@ for tablename, table in tables.items():
 
         td.append( text )
 
+<<<<<<< HEAD
     res += writetable( tablename, td ) + '\n\n'
+=======
+        # foreign key
+        if 'f' in thing:
+            foreignkeys.append( (tablename, thing[0]) )
+            thing.remove( 'f' )
+
+        if len( thing ) == 3:
+            vardef += checktype( thing[1] ) + ' ' + checkrule( thing[2] )
+>>>>>>> a0047dfd2a439715c3b53933ce91d0d6796278ef
 
 res += '\n\n'
 alter = 'ALTER TABLE "{table}" ADD FOREIGN KEY ("{fkey}") REFERENCES "{ftable}" ("{key}");\n'
@@ -83,5 +122,11 @@ for item in foreignkeys:
 
     res += alter.format( table = table, fkey = fkey, key = key, ftable = ftable )
 
+<<<<<<< HEAD
 print( res )
+=======
+    output += writeforeignkey( foreignkeys )
+#    print( output )
+>>>>>>> a0047dfd2a439715c3b53933ce91d0d6796278ef
 
+conn = pg.connect( 'dbname=coffee user=' )

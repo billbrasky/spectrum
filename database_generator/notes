@@ -1,0 +1,4 @@
+postgresql 10
+python3
+    psycopg2
+        libpqdev
