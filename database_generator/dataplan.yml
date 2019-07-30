@@ -1,0 +1,86 @@
+definitions:
+  vc: &vc
+    type: varchar
+
+  fk: &fk
+    type: int
+    fk: true
+
+  pk: &pk
+    type: int
+    pk: true
+
+tables:
+  beans:
+    id: *pk
+    bagweight: *vc
+    number_of_bags:
+      type: int
+    species: *vc
+    variety: *vc
+    expiration: *vc
+    grading_date: *vc
+    harvest_year:
+      type: int
+    cupping_id: *fk
+    green_id: *fk
+    farm_if: *fk
+
+  review_cupping:
+    id: *pk
+    acidity: *vc
+    after_taste: *vc
+    arome: *vc
+    balance: *vc
+    body: *vc
+    cleanliness: *vc
+    flavor: *vc
+    sweetness: *vc
+    total_cup_point: *vc
+    uniformity: *vc
+
+  review_green:
+    id: *pk
+    defects_1: *vc
+    defects_2: *vc
+    color: *vc
+    moisture: *vc
+    quakers: *vc
+    processing_method: *vc
+
+  farm:
+    owner: *vc
+    owner_1: *vc
+    company: *vc
+    country: *vc
+    cert_id: *fk
+    name: *vc
+    ico:
+      type: int
+    country_partner: *vc
+    lot_number:
+      type: int
+    mill: *vc
+    region: *vc
+    producer: *vc
+    altitude_meters_id: *fk
+    altitude_id: *fk
+
+  certificate:
+    id: *pk
+    address: *vc
+    body: *vc
+    contact: *vc
+
+  altitude_meters:
+    id: *pk
+    high: *vc
+    low: *vc
+    mean: *vc
+
+  altitude:
+    id: *pk
+    altitude: *vc
+    unit: *vc
+
+

@@ -1,5 +1,5 @@
 import csv, re
-
+import yaml
 
 
 
@@ -45,42 +45,43 @@ def writetable( tn, td ):
 
     return res
 
-with open( 'dataplan.txt', 'r' ) as f:
+with open( 'dataplan.yml', 'r' ) as f:
 
-    tablename = None
-    tabledata = []
-    output = ''
+    data = yaml.load( f )
 
-    for line in f:
+definitions = data['definitions']
+tables = data['tables']
+foreignkeys = []
+res = ''
+for tablename, table in tables.items():
+    td = []
+    for columnname, column in table.items():
+        text = '\t{0} {1}'.format( columnname, column['type'] )
         
-        line = line.strip()
+        isprimary = column.get( 'pk', False )
+        isforeign = column.get( 'fk', False )
 
-        if line[0] == '#':
+        if isforeign:
+            foreignkeys.append( (tablename, columnname) )
 
-            if tablename is None:
-                tablename = line[1:]
+        if isprimary:
 
-            else:
-                output += writetable( tablename, tabledata ) + '\n\n'
-                tabledata = []
+            text += ' PRIMARY KEY'
 
-            continue
+        td.append( text )
 
+    res += writetable( tablename, td ) + '\n\n'
 
-        thing = line.split( ' ' )
+res += '\n\n'
+alter = 'ALTER TABLE "{table}" ADD FOREIGN KEY ("{fkey}") REFERENCES "{ftable}" ("{key}");\n'
+for item in foreignkeys:
 
-        vardef = '\t"{}" '.format( thing[0] )
+    table, fkey = item
 
-        if len( thing ) == 3:
-            vardef += checktype( thing[1] ) + ' ' + checkrule( thing[2] )
+    ftable = fkey[:-3]
+    key = 'id'
 
-        elif len( thing ) == 2:
-            vardef += checktype( thing[1] )
+    res += alter.format( table = table, fkey = fkey, key = key, ftable = ftable )
 
-        else:
-            vardef += 'varchar'
-
-
-        tabledata.append( vardef )
-
+print( res )
 
