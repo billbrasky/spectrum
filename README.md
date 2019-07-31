@@ -29,8 +29,8 @@ The areas we plan to explore are:
 - Dataset
   - https://github.com/jldbc/coffee-quality-database
 - To do:
-  - [/] Pull dataset into repo
-  - [/] Create a database schema for the dataset
+  - [x] Pull dataset into repo
+  - [x] Create a database schema for the dataset
     - indexes, foreign keys, etc
     - https://dbdiagram.io/
   - [ ] Create makefile for running various commands
