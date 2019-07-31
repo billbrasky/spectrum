@@ -22,9 +22,9 @@ tables:
     grading_date: *vc
     harvest_year:
       type: int
-    cupping_id: *fk
-    green_id: *fk
-    farm_if: *fk
+    review_cupping_id: *fk
+    review_green_id: *fk
+    farm_id: *fk
 
   review_cupping:
     id: *pk
@@ -49,11 +49,12 @@ tables:
     processing_method: *vc
 
   farm:
+    id: *pk
     owner: *vc
     owner_1: *vc
     company: *vc
     country: *vc
-    cert_id: *fk
+    certificate_id: *fk
     name: *vc
     ico:
       type: int
