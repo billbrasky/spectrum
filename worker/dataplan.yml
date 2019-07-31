@@ -13,75 +13,158 @@ definitions:
 tables:
   beans:
     id: *pk
-    bagweight: *vc
+    bagweight:
+      <<: *vc
+      origin: Bag.Weight
     number_of_bags:
       type: int
-    species: *vc
-    variety: *vc
-    expiration: *vc
-    grading_date: *vc
+      origin: Number.of.Bags
+    species:
+      <<: *vc
+      origin: Species
+    variety:
+      <<: *vc
+      origin: Variety
+    expiration:
+      <<: *vc
+      origin: Expiration
+    grading_date:
+      <<: *vc
+      origin: Grading.Date
     harvest_year:
       type: int
+      origin: Harvest.Year
     review_cupping_id: *fk
     review_green_id: *fk
     farm_id: *fk
 
   review_cupping:
     id: *pk
-    acidity: *vc
-    after_taste: *vc
-    arome: *vc
-    balance: *vc
-    body: *vc
-    cleanliness: *vc
-    flavor: *vc
-    sweetness: *vc
-    total_cup_point: *vc
-    uniformity: *vc
+    acidity:
+      <<: *vc
+      origin: Acidity
+    aftertaste:
+      <<: *vc
+      origin: Aftertaste
+    arome:
+      <<: *vc
+      origin: Aroma
+    balance:
+      <<: *vc
+      origin: Balance
+    body:
+      <<: *vc
+      origin: Body
+    cleanliness:
+      <<: *vc
+      origin: Clean.Cup
+    flavor:
+      <<: *vc
+      origin: Flavor
+    sweetness:
+      <<: *vc
+      origin: Sweetness
+    cupper_points:
+      <<: *vc
+      origin: Cupper.Points
+    total_cup_point:
+      <<: *vc
+      origin: Total.Cup.Points
+    uniformity:
+      <<: *vc
+      origin: Uniformity
 
   review_green:
     id: *pk
-    defects_1: *vc
-    defects_2: *vc
-    color: *vc
-    moisture: *vc
-    quakers: *vc
-    processing_method: *vc
+    defects_1:
+      <<: *vc
+      origin: Category.One.Defects
+    defects_2:
+      <<: *vc
+      origin: Category.Two.Defects
+    color:
+      <<: *vc
+      origin: Color
+    moisture:
+      <<: *vc
+      origin: Moisture
+    quakers:
+      <<: *vc
+      origin: Quakers
+    processing_method:
+      <<: *vc
+      origin: Processing.Method
 
   farm:
     id: *pk
-    owner: *vc
-    owner_1: *vc
-    company: *vc
-    country: *vc
+    owner:
+      <<: *vc
+      origin: Owner
+    owner_1:
+      <<: *vc
+      origin: Owner.1
+    company:
+      <<: *vc
+      origin: Company
+    country:
+      <<: *vc
+      origin: County.of.Origin
     certificate_id: *fk
-    name: *vc
+    name:
+      <<: *vc
+      origin: Farm.Name
     ico:
       type: int
-    country_partner: *vc
+      origin: ICO.Number
+    country_partner:
+      <<: *vc
+      origin: In.Country.Partner
     lot_number:
       type: int
-    mill: *vc
-    region: *vc
-    producer: *vc
+      origin: Lot.Number
+    mill:
+      <<: *vc
+      origin: Mill
+    region:
+      <<: *vc
+      origin: Region
+    producer:
+      <<: *vc
+      origin: Producer
     altitude_meters_id: *fk
     altitude_id: *fk
 
   certificate:
     id: *pk
-    address: *vc
-    body: *vc
-    contact: *vc
+    address:
+      <<: *vc
+      origin: Certification.Address
+    body:
+      <<: *vc
+      origin: Certification.Body
+    contact:
+      <<: *vc
+      origin: Certification.Contact
 
   altitude_meters:
     id: *pk
-    high: *vc
-    low: *vc
-    mean: *vc
+    high:
+      <<: *vc
+      origin: altitude_high_meters
+    low:
+      <<: *vc
+      origin: altitude_low_meters
+    mean:
+      <<: *vc
+      origin: altitude_mean_meters
 
   altitude:
     id: *pk
-    altitude: *vc
-    unit: *vc
+    altitude:
+      <<: *vc
+      origin: Altitude
+    unit:
+      <<: *vc
+      origin: unit_of_measurement
 
 

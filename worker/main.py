@@ -43,7 +43,7 @@ def checkrule( s ):
 
 def writetable( tn, td ):
 
-    res = 'CREATE TABLE "{0}" (\n{1}\n);'.format( tn, ',\n'.join( td ))
+    res = 'CREATE TABLE "coffee.{0}" (\n{1}\n);'.format( tn, ',\n'.join( td ))
 
     return res
 
