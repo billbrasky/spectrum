@@ -74,9 +74,13 @@ ALTER TABLE {schema}.{table}
 """
     insertion = ''
     for tablename, table in tables.items():
-        insert = 'INSERT INTO ' + tablename + ' VALUES \n({})\n\n'
+        insert = """INSERT INTO {0}.{1}
+    ({{domain}})
+    VALUES
+    ({{values}});\n\n""".format( schema, tablename )
 
         td = []
+        temp = { 'domain': [], 'values': [] }
         values = []
         for columnname, column in table.items():
 
@@ -103,12 +107,15 @@ ALTER TABLE {schema}.{table}
                 s = '{{{}}}'
                 if re.match( '^(var)?char', column['type'] ):
                     s = "'{{{}}}'"
-                values.append( s.format( column['origin'] ))
+                temp['domain'].append( columnname )
+                temp['values'].append( s.format( column['origin'] ))
 
             td.append( text )
 
         query += writetable( tablename, td ) + '\n\n'
-        insertion += insert.format( ','.join( values ))
+
+        temp = {x: ','.join( y ) for x, y in temp.items() }
+        insertion += insert.format( **temp )
     query += foreignkeys
 
     return query, insertion
@@ -117,21 +124,28 @@ def builddatabase( query, database = 'coffee', schema = 'coffee' ):
     cur = setup( query, database, schema )
     return cur
 
+def insertdata( cur ):
+
+    with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
+        raw = csv.reader( f, quotechar = '"', delimiter = ',' )
+        headers = next( raw )
+
+        for row in raw:
+            datapoint = {h: row[headers.index(h)] for h in headers}
+
+            query = insertion.format( **datapoint )
+
+            cur.execute( query )
+
+#            print( insert )
+
+
 dataplan = getdataplan()
 query, insertion = processdataplan( dataplan )
 
-with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
-    raw = csv.reader( f, quotechar = '"', delimiter = ',' )
-    headers = next( raw )
+cur = builddatabase( query )
 
-    for row in raw:
-        datapoint = {h: row[headers.index(h)] for h in headers}
-
-        insert = insertion.format( **datapoint )
-
-        print( insert )
-
-
+insertdata( cur )
 
 
 
