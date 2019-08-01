@@ -1,102 +1,137 @@
 import csv, re
 import yaml
-
-
-
-def writetable():
-    pass
-
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-def checktype( s ):
 
-    types = {
-        'i': 'int',
-        'vc': 'varchar',
-        'c': 'char'
-    }
-
-    tipe = types.get( s, 'none' )
-
-    if tipe == 'none':
-        print( 'There is a type not being accounted for. {}'.format( s ))
-
-    return tipe
+def show_query(cur, title, qry):
+    print('%s' % (title))
+    cur.execute(qry)
+    for row in cur.fetchall():
+        print(row)
+    print('')
 
 
-def checkrule( s ):
+def setup( 
+        query = None, 
+        database = 'coffee', 
+        schema = 'coffee', 
+        user = 'escdata' ):
+    conn = pg.connect( dbname = 'postgres', user = user )
+    conn.set_isolation_level( ISOLATION_LEVEL_AUTOCOMMIT )
+
+    cur = conn.cursor()
+
+    cur.execute( 'DROP DATABASE IF EXISTS {0};'.format( database ))
+    cur.execute( 'CREATE DATABASE {0};'.format( database ))
+    show_query( cur, 'current database', 'SELECT current_database()' )
+    cur.close()
+    conn.close()
+
+    conn = pg.connect( dbname = database, user = user )
+    cur = conn.cursor()
+
+    show_query( cur, 'current database', 'SELECT current_database()' )
+
+
+
+    if query is not None:
+        cur.execute( query )
     
-    if s == 'f':
-        return 'busy'
+    show_query( cur, 'sdfds', 'select * from information_schema.tables')
+    conn.commit()
 
-    rules = {
-        'p': 'PRIMARY KEY'
-    }
+    return cur
 
-    rule = rules.get( s, 'none' )
-    if rule == 'none':
-        print( 'There is a rule not being accounted for. {}'.format( s ))
+def writetable( tn, td, schema = 'coffee' ):
 
-    return rule
-
-
-def writetable( tn, td ):
-
-    res = 'CREATE TABLE "coffee.{0}" (\n{1}\n);'.format( tn, ',\n'.join( td ))
+    res = 'CREATE TABLE {0}.{1} (\n{2}\n);'.format( schema, tn, ',\n'.join( td ))
 
     return res
 
-with open( 'dataplan.yml', 'r' ) as f:
 
-    data = yaml.load( f )
+def getdataplan():
+    with open( 'dataplan.yml', 'r' ) as f:
+        data = yaml.load( f )
+    return data
 
-definitions = data['definitions']
-tables = data['tables']
-foreignkeys = []
-res = ''
-for tablename, table in tables.items():
-    td = []
-    for columnname, column in table.items():
-        text = '\t{0} {1}'.format( columnname, column['type'] )
-        
-        isprimary = column.get( 'pk', False )
-        isforeign = column.get( 'fk', False )
+def processdataplan( dataplan, database = 'coffee', schema = 'coffee' ):
 
-        if isforeign:
-            foreignkeys.append( (tablename, columnname) )
+    definitions = dataplan['definitions']
+    tables = dataplan['tables']
 
-        if isprimary:
+    query = """DROP SCHEMA IF EXISTS {0};
+CREATE SCHEMA {0};
 
-            text += ' PRIMARY KEY'
-
-        td.append( text )
-
-    res += writetable( tablename, td ) + '\n\n'
-
-res += '\n\n'
-alter = 'ALTER TABLE "{table}" ADD FOREIGN KEY ("{fkey}") REFERENCES "{ftable}" ("{key}");\n'
-for item in foreignkeys:
-
-    table, fkey = item
-
-    ftable = fkey[:-3]
-    key = 'id'
-
-    res += alter.format( table = table, fkey = fkey, key = key, ftable = ftable )
+""".format( schema )
 
 
-res = 'DROP SCHEMA IF EXISTS coffee;\nCREATE SCHEMA coffee;\n\n' + res
-print( res )
+    foreignkeys = ''
+    alter = """
+ALTER TABLE {schema}.{table} 
+    ADD FOREIGN KEY ("{key}")
+    REFERENCES {schema}.{ftable} ("{fkey}");
+"""
+    insertion = ''
+    for tablename, table in tables.items():
+        insert = 'INSERT INTO ' + tablename + ' VALUES \n({})\n\n'
 
-conn = pg.connect( dbname='postgres', user='escdata' )
-conn.set_isolation_level( ISOLATION_LEVEL_AUTOCOMMIT )
+        td = []
+        values = []
+        for columnname, column in table.items():
 
-cur = conn.cursor()
-cur.execute( 'DROP DATABASE IF EXISTS coffee;' )
-cur.execute( 'CREATE DATABASE coffee;' )
-#conn.commit()
-cur.execute( res )
+            text = '    {0} {1}'.format( columnname, column['type'] )
+            
+            isprimary = column.get( 'pk', False )
+            isforeign = column.get( 'fk', False )
 
-cur.close()
-conn.close()
+            if isforeign:
+                o = {
+                    'schema': schema,
+                    'table': tablename,
+                    'ftable': '_'.join( columnname.split( '_' )[:-1] ),
+                    'key': columnname,
+                    'fkey': columnname.split( '_' )[-1]
+                }
+
+                foreignkeys += alter.format( **o )
+    
+            elif isprimary:
+                text += ' PRIMARY KEY'
+
+            else:
+                s = '{{{}}}'
+                if re.match( '^(var)?char', column['type'] ):
+                    s = "'{{{}}}'"
+                values.append( s.format( column['origin'] ))
+
+            td.append( text )
+
+        query += writetable( tablename, td ) + '\n\n'
+        insertion += insert.format( ','.join( values ))
+    query += foreignkeys
+
+    return query, insertion
+
+def builddatabase( query, database = 'coffee', schema = 'coffee' ):
+    cur = setup( query, database, schema )
+    return cur
+
+dataplan = getdataplan()
+query, insertion = processdataplan( dataplan )
+
+with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
+    raw = csv.reader( f, quotechar = '"', delimiter = ',' )
+    headers = next( raw )
+
+    for row in raw:
+        datapoint = {h: row[headers.index(h)] for h in headers}
+
+        insert = insertion.format( **datapoint )
+
+        print( insert )
+
+
+
+
+

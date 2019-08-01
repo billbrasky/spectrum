@@ -15,10 +15,10 @@ tables:
     id: *pk
     bagweight:
       <<: *vc
-      origin: Bag.Weight
+      origin: Bag_Weight
     number_of_bags:
       type: int
-      origin: Number.of.Bags
+      origin: Number_of_Bags
     species:
       <<: *vc
       origin: Species
@@ -30,10 +30,10 @@ tables:
       origin: Expiration
     grading_date:
       <<: *vc
-      origin: Grading.Date
+      origin: Grading_Date
     harvest_year:
       type: int
-      origin: Harvest.Year
+      origin: Harvest_Year
     review_cupping_id: *fk
     review_green_id: *fk
     farm_id: *fk
@@ -57,7 +57,7 @@ tables:
       origin: Body
     cleanliness:
       <<: *vc
-      origin: Clean.Cup
+      origin: Clean_Cup
     flavor:
       <<: *vc
       origin: Flavor
@@ -66,10 +66,10 @@ tables:
       origin: Sweetness
     cupper_points:
       <<: *vc
-      origin: Cupper.Points
+      origin: Cupper_Points
     total_cup_point:
       <<: *vc
-      origin: Total.Cup.Points
+      origin: Total_Cup_Points
     uniformity:
       <<: *vc
       origin: Uniformity
@@ -78,10 +78,10 @@ tables:
     id: *pk
     defects_1:
       <<: *vc
-      origin: Category.One.Defects
+      origin: Category_One_Defects
     defects_2:
       <<: *vc
-      origin: Category.Two.Defects
+      origin: Category_Two_Defects
     color:
       <<: *vc
       origin: Color
@@ -93,7 +93,7 @@ tables:
       origin: Quakers
     processing_method:
       <<: *vc
-      origin: Processing.Method
+      origin: Processing_Method
 
   farm:
     id: *pk
@@ -102,26 +102,26 @@ tables:
       origin: Owner
     owner_1:
       <<: *vc
-      origin: Owner.1
+      origin: Owner_1
     company:
       <<: *vc
       origin: Company
     country:
       <<: *vc
-      origin: County.of.Origin
+      origin: Country_of_Origin
     certificate_id: *fk
     name:
       <<: *vc
-      origin: Farm.Name
+      origin: Farm_Name
     ico:
       type: int
-      origin: ICO.Number
+      origin: ICO_Number
     country_partner:
       <<: *vc
-      origin: In.Country.Partner
+      origin: In_Country_Partner
     lot_number:
-      type: int
-      origin: Lot.Number
+      <<: *vc
+      origin: Lot_Number
     mill:
       <<: *vc
       origin: Mill
@@ -138,13 +138,13 @@ tables:
     id: *pk
     address:
       <<: *vc
-      origin: Certification.Address
+      origin: Certification_Address
     body:
       <<: *vc
-      origin: Certification.Body
+      origin: Certification_Body
     contact:
       <<: *vc
-      origin: Certification.Contact
+      origin: Certification_Contact
 
   altitude_meters:
     id: *pk
