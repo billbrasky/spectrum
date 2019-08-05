@@ -7,7 +7,7 @@ definitions:
     fk: true
 
   pk: &pk
-    type: int
+    type: SERIAL
     pk: true
 
 tables:
@@ -32,7 +32,7 @@ tables:
       <<: *vc
       origin: Grading_Date
     harvest_year:
-      type: int
+      <<: *vc
       origin: Harvest_Year
     review_cupping_id: *fk
     review_green_id: *fk
@@ -114,7 +114,7 @@ tables:
       <<: *vc
       origin: Farm_Name
     ico:
-      type: int
+      <<: *vc
       origin: ICO_Number
     country_partner:
       <<: *vc

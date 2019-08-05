@@ -1,7 +1,9 @@
 import csv, re
-import yaml
+import yaml, sys
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+from color.colors import *
 
 
 def show_query(cur, title, qry):
@@ -22,26 +24,36 @@ def setup(
 
     cur = conn.cursor()
 
-    cur.execute( 'DROP DATABASE IF EXISTS {0};'.format( database ))
-    cur.execute( 'CREATE DATABASE {0};'.format( database ))
-    show_query( cur, 'current database', 'SELECT current_database()' )
-    cur.close()
-    conn.close()
+    try:
+        cur.execute( 'DROP DATABASE IF EXISTS {0};'.format( database ))
+        cur.execute( 'CREATE DATABASE {0};'.format( database ))
+        cur.close()
+        conn.close()
+    except Exception as e:
+        e = colorstr( ' '.join( e.args ))
+        s = colorstr( 'Couldn\'t drop and create database!' )
+        print( s.bold.yellow )
+        print( e.bold.red )
+        return (None, None)
 
     conn = pg.connect( dbname = database, user = user )
     cur = conn.cursor()
 
-    show_query( cur, 'current database', 'SELECT current_database()' )
-
-
-
     if query is not None:
-        cur.execute( query )
+        try:
+            cur.execute( query )
+        except Exception as e:
+            e = colorstr( ' '.join( e.args ))
+            s = colorstr( 'Query broke!' )
+            print( s.bold.yellow )
+            print( e.bold.red )
+            cur.close()
+            conn.close()
+            return (None, None)
     
-    show_query( cur, 'sdfds', 'select * from information_schema.tables')
     conn.commit()
 
-    return cur
+    return (conn, cur)
 
 def writetable( tn, td, schema = 'coffee' ):
 
@@ -54,6 +66,15 @@ def getdataplan():
     with open( 'dataplan.yml', 'r' ) as f:
         data = yaml.load( f )
     return data
+
+def processor( s ):
+    if "'" in s:
+        s = s.replace( "'", "''" )
+
+    if s is None or re.match( r'^(NA|na)?$', s ):
+        s = 'NULL'
+    
+    return s
 
 def processdataplan( dataplan, database = 'coffee', schema = 'coffee' ):
 
@@ -121,31 +142,63 @@ ALTER TABLE {schema}.{table}
     return query, insertion
 
 def builddatabase( query, database = 'coffee', schema = 'coffee' ):
-    cur = setup( query, database, schema )
-    return cur
+    conn, cur = setup( query, database, schema )
+    return conn, cur
 
-def insertdata( cur ):
+def sqlrepl( m ):
+    prefix = m.group(1)
+    suffix = m.group(3)
+    s = colorstr( m.group(2))
+#    print( m )
+    res = prefix + s.blue.bold + suffix
+    
+    return res
 
+def sqlrepl1( m ):
+    prefix = m.group(1)
+    suffix = m.group(3)
+    s = colorstr( m.group(2))
+#    print( m )
+    res = prefix + s.green + suffix
+    
+    return res
+
+def insertdata( conn, cur ):
+    if conn is None or cur is None:
+        return
     with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
         raw = csv.reader( f, quotechar = '"', delimiter = ',' )
         headers = next( raw )
 
         for row in raw:
-            datapoint = {h: row[headers.index(h)] for h in headers}
+            datapoint = {h: processor( row[headers.index(h)] ) for h in headers}
+
+
 
             query = insertion.format( **datapoint )
-
-            cur.execute( query )
-
-#            print( insert )
-
+            try:
+                cur.execute( query )
+            except Exception as e:
+                e = colorstr( ' '.join( e.args ))
+                s = colorstr( 'The insertion broke' )
+                print( s.bold.yellow )
+                print( e.bold.red )
+                output = re.sub( sqlcolors, sqlrepl, query )
+                output = re.sub( nonsqlcolors, sqlrepl1, output )
+                print( output )
+                cur.close()
+                conn.close()
+                break
+    conn.commit()
 
 dataplan = getdataplan()
 query, insertion = processdataplan( dataplan )
 
-cur = builddatabase( query )
+with open( 'setup.sql', 'w' ) as f:
+    f.write( query )
+conn, cur = builddatabase( query )
 
-insertdata( cur )
+insertdata( conn, cur )
 
 
 
