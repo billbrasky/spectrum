@@ -1,9 +1,14 @@
 definitions:
   vc: &vc
     type: varchar
+  
+  int: &int
+    type: int
+    default: NULL
+
 
   fk: &fk
-    type: int
+    type: SERIAL
     fk: true
 
   pk: &pk
@@ -11,76 +16,49 @@ definitions:
     pk: true
 
 tables:
-  beans:
-    id: *pk
-    bagweight:
-      <<: *vc
-      origin: Bag_Weight
-    number_of_bags:
-      type: int
-      origin: Number_of_Bags
-    species:
-      <<: *vc
-      origin: Species
-    variety:
-      <<: *vc
-      origin: Variety
-    expiration:
-      <<: *vc
-      origin: Expiration
-    grading_date:
-      <<: *vc
-      origin: Grading_Date
-    harvest_year:
-      <<: *vc
-      origin: Harvest_Year
-    review_cupping_id: *fk
-    review_green_id: *fk
-    farm_id: *fk
-
   review_cupping:
     id: *pk
     acidity:
-      <<: *vc
+      <<: *int
       origin: Acidity
     aftertaste:
-      <<: *vc
+      <<: *int
       origin: Aftertaste
     arome:
-      <<: *vc
+      <<: *int
       origin: Aroma
     balance:
-      <<: *vc
+      <<: *int
       origin: Balance
     body:
-      <<: *vc
+      <<: *int
       origin: Body
     cleanliness:
-      <<: *vc
+      <<: *int
       origin: Clean_Cup
     flavor:
-      <<: *vc
+      <<: *int
       origin: Flavor
     sweetness:
-      <<: *vc
+      <<: *int
       origin: Sweetness
     cupper_points:
-      <<: *vc
+      <<: *int
       origin: Cupper_Points
     total_cup_point:
-      <<: *vc
+      <<: *int
       origin: Total_Cup_Points
     uniformity:
-      <<: *vc
+      <<: *int
       origin: Uniformity
 
   review_green:
     id: *pk
     defects_1:
-      <<: *vc
+      <<: *int
       origin: Category_One_Defects
     defects_2:
-      <<: *vc
+      <<: *int
       origin: Category_Two_Defects
     color:
       <<: *vc
@@ -94,45 +72,6 @@ tables:
     processing_method:
       <<: *vc
       origin: Processing_Method
-
-  farm:
-    id: *pk
-    owner:
-      <<: *vc
-      origin: Owner
-    owner_1:
-      <<: *vc
-      origin: Owner_1
-    company:
-      <<: *vc
-      origin: Company
-    country:
-      <<: *vc
-      origin: Country_of_Origin
-    certificate_id: *fk
-    name:
-      <<: *vc
-      origin: Farm_Name
-    ico:
-      <<: *vc
-      origin: ICO_Number
-    country_partner:
-      <<: *vc
-      origin: In_Country_Partner
-    lot_number:
-      <<: *vc
-      origin: Lot_Number
-    mill:
-      <<: *vc
-      origin: Mill
-    region:
-      <<: *vc
-      origin: Region
-    producer:
-      <<: *vc
-      origin: Producer
-    altitude_meters_id: *fk
-    altitude_id: *fk
 
   certificate:
     id: *pk
@@ -166,5 +105,72 @@ tables:
     unit:
       <<: *vc
       origin: unit_of_measurement
+
+  farm:
+    id: *pk
+    owner:
+      <<: *vc
+      origin: Owner
+    owner_1:
+      <<: *vc
+      origin: Owner_1
+    company:
+      <<: *vc
+      origin: Company
+    country:
+      <<: *vc
+      origin: Country_of_Origin
+    name:
+      <<: *vc
+      origin: Farm_Name
+    ico:
+      <<: *vc
+      origin: ICO_Number
+    country_partner:
+      <<: *vc
+      origin: In_Country_Partner
+    lot_number:
+      <<: *vc
+      origin: Lot_Number
+    mill:
+      <<: *vc
+      origin: Mill
+    region:
+      <<: *vc
+      origin: Region
+    producer:
+      <<: *vc
+      origin: Producer
+#    altitude_meters_id: *fk
+#    altitude_id: *fk
+#    certificate_id: *fk
+
+  beans:
+    id: *pk
+    bagweight:
+      <<: *vc
+      origin: Bag_Weight
+    number_of_bags:
+      type: int
+      origin: Number_of_Bags
+    species:
+      <<: *vc
+      origin: Species
+    variety:
+      <<: *vc
+      origin: Variety
+    expiration:
+      <<: *vc
+      origin: Expiration
+    grading_date:
+      <<: *vc
+      origin: Grading_Date
+    harvest_year:
+      <<: *vc
+      origin: Harvest_Year
+#    review_cupping_id: *fk
+#    review_green_id: *fk
+#    farm_id: *fk
+
 
 

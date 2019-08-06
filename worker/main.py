@@ -1,4 +1,4 @@
-import csv, re
+import csv, re, dpath
 import yaml, sys
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -9,9 +9,34 @@ from color.colors import *
 def show_query(cur, title, qry):
     print('%s' % (title))
     cur.execute(qry)
-    for row in cur.fetchall():
-        print(row)
-    print('')
+    widths = None
+    result = list( cur.fetchall())
+    for row in result:
+        if widths is None:
+            widths = [len( x ) for x in row ]
+        else:
+            for i in range( len( row )):
+                word = row[i]
+                width = widths[i]
+                if word is None:
+                    continue
+                if len( word ) > width:
+                    widths[i] = len( word )
+
+    with open( 'output.txt', 'w' ) as f:
+        for row in result:
+            words = []
+            for i in range( len( row )):
+                word = str( row[i] )
+                width = widths[i]
+                while len( word ) < width:
+                    word += ' '
+                words.append( word )
+
+            output = ' | '.join( words )
+            f.write( output + '\n' )
+#            print( output )
+        
 
 
 def setup( 
@@ -67,14 +92,6 @@ def getdataplan():
         data = yaml.load( f )
     return data
 
-def processor( s ):
-    if "'" in s:
-        s = s.replace( "'", "''" )
-
-    if s is None or re.match( r'^(NA|na)?$', s ):
-        s = 'NULL'
-    
-    return s
 
 def processdataplan( dataplan, database = 'coffee', schema = 'coffee' ):
 
@@ -94,7 +111,10 @@ ALTER TABLE {schema}.{table}
     REFERENCES {schema}.{ftable} ("{fkey}");
 """
     insertion = ''
-    for tablename, table in tables.items():
+    datatypes = {}
+    tableitems = list( tables.items())
+    tableitems.sort()
+    for tablename, table in tableitems:
         insert = """INSERT INTO {0}.{1}
     ({{domain}})
     VALUES
@@ -102,11 +122,10 @@ ALTER TABLE {schema}.{table}
 
         td = []
         temp = { 'domain': [], 'values': [] }
-        values = []
         for columnname, column in table.items():
 
             text = '    {0} {1}'.format( columnname, column['type'] )
-            
+
             isprimary = column.get( 'pk', False )
             isforeign = column.get( 'fk', False )
 
@@ -125,11 +144,9 @@ ALTER TABLE {schema}.{table}
                 text += ' PRIMARY KEY'
 
             else:
-                s = '{{{}}}'
-                if re.match( '^(var)?char', column['type'] ):
-                    s = "'{{{}}}'"
                 temp['domain'].append( columnname )
-                temp['values'].append( s.format( column['origin'] ))
+                temp['values'].append( '{{{}}}'.format( column['origin'] ))
+                datatypes[column['origin']] = column['type']
 
             td.append( text )
 
@@ -139,7 +156,7 @@ ALTER TABLE {schema}.{table}
         insertion += insert.format( **temp )
     query += foreignkeys
 
-    return query, insertion
+    return query, insertion, datatypes
 
 def builddatabase( query, database = 'coffee', schema = 'coffee' ):
     conn, cur = setup( query, database, schema )
@@ -163,7 +180,33 @@ def sqlrepl1( m ):
     
     return res
 
-def insertdata( conn, cur ):
+def processor( s, datatype, columnname ):
+
+    months = {
+        'Abril': 'April',
+        'Julio': 'July',
+        'Mayo': 'May',
+        'Marzo': 'March'
+    }
+
+    if columnname == 'Harvest_Year':
+        monthregex = re.compile( '(' + '|'.join( list( months.keys())) + ')' )
+        s = re.sub( r'(\s*(\/|-)\s*)|( (a|to) )', '-', s )
+        s = monthregex.sub( lambda m: months[m.group(1)], s )
+        
+
+    if "'" in s:
+        s = s.replace( "'", "''" )
+
+    if s is None or re.match( r'^(NA|na)?$', s ):
+        s = 'NULL'
+
+    elif re.match( '^(var)?char', datatype ):
+        s = "'{}'".format( s )
+    
+    return s
+
+def insertdata( conn, cur, datatypes ):
     if conn is None or cur is None:
         return
     with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
@@ -171,8 +214,11 @@ def insertdata( conn, cur ):
         headers = next( raw )
 
         for row in raw:
-            datapoint = {h: processor( row[headers.index(h)] ) for h in headers}
-
+            datapoint = {}
+            for h in headers[1:]:
+                value = row[headers.index(h)]
+                value = processor( value, datatypes[h], h )
+                datapoint[h] = value
 
 
             query = insertion.format( **datapoint )
@@ -192,13 +238,22 @@ def insertdata( conn, cur ):
     conn.commit()
 
 dataplan = getdataplan()
-query, insertion = processdataplan( dataplan )
+
+query, insertion, datatypes = processdataplan( dataplan )
 
 with open( 'setup.sql', 'w' ) as f:
     f.write( query )
 conn, cur = builddatabase( query )
 
-insertdata( conn, cur )
+insertdata( conn, cur, datatypes )
 
+query = """
 
+SELECT DISTINCT expiration, grading_date, harvest_year FROM coffee.beans;
 
+"""
+
+show_query( cur, '', query )
+
+cur.close()
+conn.close()
