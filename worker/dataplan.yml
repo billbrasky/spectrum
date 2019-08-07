@@ -4,8 +4,15 @@ definitions:
   
   int: &int
     type: int
-    default: NULL
+    default: null
 
+  float: &float
+    type: float
+    default: null
+
+  date: &date
+    type: date
+    default: null
 
   fk: &fk
     type: SERIAL
@@ -19,37 +26,37 @@ tables:
   review_cupping:
     id: *pk
     acidity:
-      <<: *int
+      <<: *float
       origin: Acidity
     aftertaste:
-      <<: *int
+      <<: *float
       origin: Aftertaste
-    arome:
-      <<: *int
+    aroma:
+      <<: *float
       origin: Aroma
     balance:
-      <<: *int
+      <<: *float
       origin: Balance
     body:
-      <<: *int
+      <<: *float
       origin: Body
     cleanliness:
-      <<: *int
+      <<: *float
       origin: Clean_Cup
     flavor:
-      <<: *int
+      <<: *float
       origin: Flavor
     sweetness:
-      <<: *int
+      <<: *float
       origin: Sweetness
     cupper_points:
-      <<: *int
+      <<: *float
       origin: Cupper_Points
     total_cup_point:
-      <<: *int
+      <<: *float
       origin: Total_Cup_Points
     uniformity:
-      <<: *int
+      <<: *float
       origin: Uniformity
 
   review_green:
@@ -160,10 +167,10 @@ tables:
       <<: *vc
       origin: Variety
     expiration:
-      <<: *vc
+      <<: *date
       origin: Expiration
     grading_date:
-      <<: *vc
+      <<: *date
       origin: Grading_Date
     harvest_year:
       <<: *vc
