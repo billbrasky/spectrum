@@ -1,0 +1,34 @@
+queries:
+  - | 
+    SELECT DISTINCT
+        id
+        , regexp_replace( 
+            substring( altitude from '\d+''\d+' ), 
+            '''', '' ) AS "altitude"
+    FROM
+        coffee.altitude
+    WHERE
+        altitude ~ '\d+''\d+'
+  - |
+    WITH t AS (
+        SELECT DISTINCT
+            id
+            , regexp_matches( altitude, '(^|\D)(\d{1,2})\.(\d{1,2})' ) AS "altitude"
+        FROM
+            coffee.altitude
+        WHERE
+            altitude ~'\d{1,2}\.\d'
+    )
+    SELECT DISTINCT
+        id
+        , rpad( altitude[2] || altitude[3], 4, '0' ) AS "altitude"
+    FROM
+        t
+  - |
+    SELECT DISTINCT
+        id
+        , substring( altitude from '\D?(\d{3,})\.\d+' ) AS "altitude"
+    FROM
+        coffee.altitude
+    WHERE
+        altitude ~'\d{3,}\.\d'

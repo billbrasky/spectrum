@@ -3,8 +3,23 @@ import yaml, sys
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from color.colors import *
+try:
+    from color.colors import *
+except ImportError as e:
+    print( ' '.join( e.args ))
+    print( 'No Colors!' )
 
+def log( listoftuples ):
+    for tple in listoftuples:
+        text, affects = tple
+        if 'color' not in sys.modules:
+            print( text )
+
+        else:
+            text = colorstr( text )
+            for affect in affects:
+                text = getattr( text, affect )
+            print( text )
 
         
 # returns a cursor object
@@ -32,10 +47,12 @@ def setup(
         cur.execute( 'CREATE DATABASE {0};'.format( database ))
 
     except Exception as e:
-        e = colorstr( ' '.join( e.args ))
-        s = colorstr( 'Couldn\'t drop and create database!' )
-        print( s.bold.yellow )
-        print( e.bold.red )
+        e = ' '.join( e.args )
+        s = 'Couldn\'t drop and create database!'
+        logtext = [(s, ['bold', 'yellow']), (e, ['bold', 'red'])]
+#        print( colorstr( s ).bold.yellow )
+#       print( colorstr( e ).bold.red )
+        log( logtext )
         cur.closeall()
         return
 
@@ -67,10 +84,11 @@ def writetable( tn, td, schema = 'coffee' ):
 
 
 # Reads the YAML data plan
-def getdataplan():
-    with open( 'dataplan.yml', 'r' ) as f:
+def getyaml( s ):
+    with open( s + '.yml', 'r' ) as f:
         data = yaml.load( f )
     return data
+
 
 
 # Processes data plan to create the desired database architecure.
@@ -186,8 +204,7 @@ def processor( s, datatype, columnname ):
         s = s.replace( '4T72010', '4T-2010' )
         s = re.sub( r'^(\d)(t|7)', r'\g<1>T', s )
         s = re.sub( r'(^|\D)(\d{2})(?!\d)', r'\g<1>20\g<2>', s )
-        
-
+    
     if "'" in s:
         s = s.replace( "'", "''" )
 
@@ -205,14 +222,12 @@ def processor( s, datatype, columnname ):
     return s
 
 
-
-
 # mains script...loosely
 def main( 
     writetofile = False, 
     build = True,
     insertdata = True ):
-    dataplan = getdataplan()
+    dataplan = getyaml( 'dataplan' )
 
     setupquery, insertion, datatypes = processdataplan( dataplan )
 
@@ -320,3 +335,16 @@ class db( pg.extensions.cursor ):
                 f.write( output + '\n' )
 
                 print( output )
+
+    def update( self, s ):
+
+        queries = getyaml( s )['queries']
+
+        with open( s + '.sql', 'r' ) as f:
+            updatetemplate = f.read()
+
+        for query in queries:
+
+            sqlupdate = updatetemplate.format( select = query )
+            print( sqlupdate)
+            #self.execute( sqlupdate )
