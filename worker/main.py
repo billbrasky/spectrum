@@ -1,5 +1,5 @@
-import csv, re, dpath
-import yaml, sys
+import csv, re
+import yaml, sys, os
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
@@ -202,10 +202,15 @@ def processor( s, datatype, columnname ):
 
 # mains script...loosely
 def main( 
+    dirpath,
     writetofile = False, 
     build = True,
     insertdata = True ):
-    dataplan = getyaml( 'dataplan' )
+
+    if not os.path.exists( 'log' ):
+        os.mkdir( 'log' )
+
+    dataplan = getyaml( dirpath + '/dataplan' )
 
     setupquery, insertion, datatypes = processdataplan( dataplan )
 
@@ -217,11 +222,13 @@ def main(
         cur = builddatabase( setupquery )
 
         if insertdata:
-            cur.insertdata( datatypes, insertion )
+            datapath = dirpath + '/../data/arabica_data_cleaned.csv'
+            cur.insertdata( datatypes, insertion, datapath )
 
         conn = cur.connection
         cur.close()
         conn.close()
+
 
 def reload():
     try:
@@ -242,9 +249,9 @@ class db( pg.extensions.cursor ):
         conn.close()
 
     # inserts data
-    def insertdata( self, datatypes, insertion ):
+    def insertdata( self, datatypes, insertion, datapath ):
 
-        with open( '../data/arabica_data_cleaned.csv', newline = '' ) as f:
+        with open( datapath, newline = '' ) as f:
             raw = csv.reader( f, quotechar = '"', delimiter = ',' )
             headers = next( raw )
 
@@ -330,3 +337,22 @@ class db( pg.extensions.cursor ):
             print( '-----------')
             self.execute( sqlupdate )
             self.connection.commit()
+
+args = sys.argv
+
+if len( args ) != 3:
+    print( 'What do you want to do?' )
+    exit()
+
+dirpath, fstring = args[1:]
+
+f = vars().get( fstring )
+
+if f is None:
+    print( "The function '{}' does not exist.".format( fstring ))
+    exit()
+
+f( dirpath )
+
+
+
