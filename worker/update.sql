@@ -10,8 +10,4 @@ FROM
 WHERE
     t.id = am.id;
 
-UPDATE
-    coffee.altitude_meters am
-SET
-
 
