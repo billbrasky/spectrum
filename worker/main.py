@@ -50,8 +50,6 @@ def setup(
         e = ' '.join( e.args )
         s = 'Couldn\'t drop and create database!'
         logtext = [(s, ['bold', 'yellow']), (e, ['bold', 'red'])]
-#        print( colorstr( s ).bold.yellow )
-#       print( colorstr( e ).bold.red )
         log( logtext )
         cur.closeall()
         return
@@ -64,10 +62,8 @@ def setup(
         except Exception as e:
             e = colorstr( ' '.join( e.args ))
             s = colorstr( 'Query broke!' )
-            print( s.bold.yellow )
-            print( e.bold.red )
-
-            cur.closeall()
+            logtext = [(s, ['bold', 'yellow']), (e, ['bold', 'red'])]
+            log( logtext )
             return
     
         cur.connection.commit()
@@ -83,7 +79,7 @@ def writetable( tn, td, schema = 'coffee' ):
     return res
 
 
-# Reads the YAML data plan
+# Reads a YAML file
 def getyaml( s ):
     with open( s + '.yml', 'r' ) as f:
         data = yaml.load( f )
@@ -161,24 +157,6 @@ def builddatabase( query, database = 'coffee', schema = 'coffee' ):
     cur = setup( query, database, schema )
     return cur
 
-# NEEDS TO BE DEPRECATEDD
-def sqlrepl( m ):
-    prefix = m.group(1)
-    suffix = m.group(3)
-    s = colorstr( m.group(2))
-#    print( m )
-    res = prefix + s.blue.bold + suffix
-    
-    return res
-def sqlrepl1( m ):
-    prefix = m.group(1)
-    suffix = m.group(3)
-    s = colorstr( m.group(2))
-#    print( m )
-    res = prefix + s.green + suffix
-    
-    return res
-
 
 # Attempt at a data processor prior to insertion into database. Current issue 
 # is that at this step, the information on the column in question is not 
@@ -232,7 +210,7 @@ def main(
     setupquery, insertion, datatypes = processdataplan( dataplan )
 
     if writetofile:
-        with open( 'setup.sql', 'w' ) as f:
+        with open( 'log/setup.sql', 'w' ) as f:
             f.write( setupquery )
 
     if build:
@@ -249,7 +227,7 @@ def reload():
     try:
         cur.closeall()
     except Exception as e:
-        colorstr( ' '.join( e.args )).bold.red
+        log( [(' '.join( e.args ), ['bold', 'red'] )] )
 
     main()
 
@@ -285,17 +263,18 @@ class db( pg.extensions.cursor ):
                 except Exception as e:
                     e = colorstr( ' '.join( e.args ))
                     s = colorstr( 'The insertion broke' )
-                    print( s.bold.yellow )
-                    print( e.bold.red )
-                    output = re.sub( sqlcolors, sqlrepl, query )
-                    output = re.sub( nonsqlcolors, sqlrepl1, output )
-                    print( output )
+                    logtext = [(s, ['bold', 'yellow']), (e, ['bold', 'red'])]
+                    log( logtext )
+#                    output = re.sub( sqlcolors, sqlrepl, query )
+#                    output = re.sub( nonsqlcolors, sqlrepl1, output )
+#                    print( output )
 
                     self.closeall()
                     break
 
         self.connection.commit()
 
+    # Excute a select query that is pretty printed to terminal
     def query( self, query, title = '' ):
         print( title )
 
@@ -319,7 +298,7 @@ class db( pg.extensions.cursor ):
                     if len( word ) > width:
                         widths[i] = len( word )
 
-        with open( 'output.txt', 'w' ) as f:
+        with open( 'log/output.txt', 'w' ) as f:
             for row in result:
                 words = []
 
@@ -336,6 +315,7 @@ class db( pg.extensions.cursor ):
 
                 print( output )
 
+    # apply updates to database
     def update( self, s ):
 
         queries = getyaml( s )['queries']
@@ -347,4 +327,6 @@ class db( pg.extensions.cursor ):
 
             sqlupdate = updatetemplate.format( select = query )
             print( sqlupdate)
-            #self.execute( sqlupdate )
+            print( '-----------')
+            self.execute( sqlupdate )
+            self.connection.commit()
