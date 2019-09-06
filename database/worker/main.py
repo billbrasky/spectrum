@@ -3,12 +3,14 @@ import yaml, sys, os
 import psycopg2 as pg
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
+# Attempts to load WIP color library
 try:
     from color.colors import *
 except ImportError as e:
     print( ' '.join( e.args ))
     print( 'No Colors!' )
 
+# Hacky way of logging... use logging?
 def log( listoftuples ):
     for tple in listoftuples:
         text, affects = tple
