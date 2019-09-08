@@ -1,8 +1,18 @@
-version: '2.1'
+# Use postgres/example user/password credentials
+version: '3.1'
 
 services:
-  github:
-    image: github
-    build: .
+
+  db:
+    image: docker.io/library/postgres:11.5-alpine
+    restart: always
+    env_file:
+      - .envrc
+    volumes:
+      - "$(PWD)/data:/docker-entrypoint-initdb.d/"
+
+  adminer:
+    image: adminer
+    restart: always
     ports:
-      - 3000:3000
+      - 8080:8080
