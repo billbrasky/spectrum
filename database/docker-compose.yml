@@ -9,7 +9,7 @@ services:
     env_file:
       - .envrc
     volumes:
-      - "$(PWD)/data:/docker-entrypoint-initdb.d/"
+      - "./data:/docker-entrypoint-initdb.d/"
 
   adminer:
     image: adminer
