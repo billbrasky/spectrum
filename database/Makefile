@@ -13,3 +13,12 @@ run:
 
 connect:
 	psql -h 127.0.0.1 -U spectrum_coffee
+
+
+# -----------------------------------
+# docker-compose commands
+up:
+	docker-compose up
+
+down:
+	docker-compose down
