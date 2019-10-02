@@ -1,14 +1,23 @@
 definitions:
-  vc: &vc
+  varchar: &vc
     type: varchar
+    notNull: true
+
+  varcharNullable: &vcnull
+    <<: *vc
+    notNull: false
   
   int: &int
-    type: int
-    default: null
+    type: integer
+    notNull: true
 
   float: &float
     type: float
     default: null
+
+  review_category: &review_category
+    type: NUMERIC(4,2)
+    notNull: true
 
   date: &date
     type: date
@@ -26,37 +35,38 @@ tables:
   review_cupping:
     id: *pk
     acidity:
-      <<: *float
+      <<: *review_category
       origin: Acidity
     aftertaste:
-      <<: *float
+      <<: *review_category
       origin: Aftertaste
     aroma:
-      <<: *float
+      <<: *review_category
       origin: Aroma
     balance:
-      <<: *float
+      <<: *review_category
       origin: Balance
     body:
-      <<: *float
+      <<: *review_category
       origin: Body
     cleanliness:
-      <<: *float
+      <<: *review_category
       origin: Clean_Cup
     flavor:
-      <<: *float
+      <<: *review_category
       origin: Flavor
     sweetness:
-      <<: *float
+      <<: *review_category
       origin: Sweetness
     cupper_points:
-      <<: *float
+      <<: *review_category
       origin: Cupper_Points
     total_cup_point:
-      <<: *float
+      <<: *review_category
+      type: NUMERIC(5,2)
       origin: Total_Cup_Points
     uniformity:
-      <<: *float
+      <<: *review_category
       origin: Uniformity
 
   review_green:
@@ -68,85 +78,103 @@ tables:
       <<: *int
       origin: Category_Two_Defects
     color:
-      <<: *vc
+      <<: *vcnull
+      length: 12
       origin: Color
     moisture:
-      <<: *vc
+      <<: *review_category
       origin: Moisture
     quakers:
-      <<: *vc
+      <<: *vcnull
+      length: 2
       origin: Quakers
     processing_method:
-      <<: *vc
+      <<: *vcnull
+      legnth: 25
       origin: Processing_Method
 
   certificate:
     id: *pk
-    address:
+    address: &address
       <<: *vc
+      length: 40
       origin: Certification_Address
     body:
       <<: *vc
+      length: 100
       origin: Certification_Body
-    contact:
-      <<: *vc
+    contact: 
+      <<: *address
       origin: Certification_Contact
 
   altitude_meters:
     id: *pk
-    high:
-      <<: *vc
+    high: &high
+      <<: *vcnull
+      length: 9
       origin: altitude_high_meters
     low:
-      <<: *vc
+      <<: *high
       origin: altitude_low_meters
     mean:
-      <<: *vc
+      <<: *high
       origin: altitude_mean_meters
 
   altitude:
     id: *pk
     altitude:
-      <<: *vc
+      <<: *vcnull
+      length: 41
       origin: Altitude
     unit:
       <<: *vc
+      length: 2
       origin: unit_of_measurement
 
   farm:
     id: *pk
-    owner:
-      <<: *vc
+    owner: &owner
+      <<: *vcnull
+      length: 50
       origin: Owner
     owner_1:
-      <<: *vc
+      <<: *owner
       origin: Owner_1
     company:
-      <<: *vc
+      <<: *vcnull
+      length: 78
       origin: Company
     country:
-      <<: *vc
+      <<: *vcnull
+      length: 28
       origin: Country_of_Origin
     name:
-      <<: *vc
+      <<: *vcnull
+      length: 73
       origin: Farm_Name
     ico:
-      <<: *vc
+      <<: *vcnull
+      length: 40
       origin: ICO_Number
     country_partner:
       <<: *vc
+      length: 85
       origin: In_Country_Partner
     lot_number:
-      <<: *vc
+      <<: *vcnull
+      length: 71
       origin: Lot_Number
     mill:
-      <<: *vc
+      <<: *vcnull
+      length: 77
       origin: Mill
     region:
-      <<: *vc
+      <<: *vcnull
+      length: 76
       origin: Region
     producer:
-      <<: *vc
+      <<: *vcnull
+      length: 100
       origin: Producer
 #    altitude_meters_id: *fk
 #    altitude_id: *fk
@@ -156,24 +184,30 @@ tables:
     id: *pk
     bagweight:
       <<: *vc
+      length: 8
       origin: Bag_Weight
     number_of_bags:
-      type: int
+      <<: *int
+      notNull: false
       origin: Number_of_Bags
     species:
       <<: *vc
+      length: 7
       origin: Species
     variety:
-      <<: *vc
+      <<: *vcnull
+      length: 21
       origin: Variety
-    expiration:
-      <<: *date
+    expiration: &expiration_date
+      <<: *vc
+      length: 20
       origin: Expiration
     grading_date:
-      <<: *date
+      <<: *expiration_date
       origin: Grading_Date
     harvest_year:
-      <<: *vc
+      <<: *vcnull
+      length: 24
       origin: Harvest_Year
 #    review_cupping_id: *fk
 #    review_green_id: *fk

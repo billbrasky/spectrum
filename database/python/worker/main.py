@@ -129,7 +129,19 @@ ALTER TABLE {schema}.{table}
         temp = { 'domain': [], 'values': [] }
         for columnname, column in table.items():
 
-            text = '    {0} {1}'.format( columnname, column['type'] )
+            columntype = column['type']
+            columnlength = column.get( 'length' )
+            isnotnull = column.get( 'notNull', False )
+
+            sqltype = columntype.upper()
+
+            if columnlength is not None:
+                sqltype += '({})'.format( columnlength )
+
+            if isnotnull:
+                sqltype += ' NOT NULL'
+
+            text = '    {0} {1}'.format( columnname, sqltype )
 
             isprimary = column.get( 'pk', False )
             isforeign = column.get( 'fk', False )
@@ -238,7 +250,7 @@ def main(
 
         if insertdata:
             datapath = dirpath + '/../data/arabica_data_cleaned.csv'
-            cur.insertdata( datatypes, insertion, datapath )
+            cur.insertdata( datatypes, insertion, datapath, writetofile )
 
         conn = cur.connection
         cur.close()
@@ -264,7 +276,9 @@ class db( pg.extensions.cursor ):
         conn.close()
 
     # inserts data
-    def insertdata( self, datatypes, insertion, datapath ):
+    def insertdata( self, datatypes, insertion, datapath, writetofile = False ):
+
+        querylog = ''
 
         with open( datapath, newline = '' ) as f:
             raw = csv.reader( f, quotechar = '"', delimiter = ',' )
@@ -279,6 +293,11 @@ class db( pg.extensions.cursor ):
 
 
                 query = insertion.format( **datapoint )
+                if writetofile:
+                    querylog += query
+
+#                print( query )
+
                 try:
                     self.execute( query )
 
@@ -293,6 +312,10 @@ class db( pg.extensions.cursor ):
 
                     self.closeall()
                     break
+
+        if writetofile:
+            with open( 'log/insert.sql', 'w' ) as f:
+                f.write( querylog )
 
         self.connection.commit()
 
