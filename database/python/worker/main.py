@@ -5,7 +5,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 # Attempts to load WIP color library
 try:
-    from color.colors import *
+    from color.color import *
 except ImportError as e:
     print( ' '.join( e.args ))
     print( 'No Colors!' )
@@ -25,9 +25,19 @@ def log( listoftuples ):
 
         
 # returns a cursor object
-def getcursor( database = 'coffee', user = 'escdata', setisolation = False ):
-    conn = pg.connect( dbname = database, user = user )
+def getcursor( database = 'coffee', user = 'postgres', setisolation = False ):
+    if user == 'postgres':
+        password = getyaml( 'local-password' )['password']
+    else:
+        password = None
 
+    o = {'db': database, 'u': user, 'p': password }    
+
+    if setisolation:
+        o['db'] = 'postgres'
+
+    conn = pg.connect( "dbname = '{db}' user = '{u}' password = '{p}'".format( **o ))
+    
     if setisolation:
         conn.set_isolation_level( ISOLATION_LEVEL_AUTOCOMMIT )
 
@@ -40,9 +50,9 @@ def setup(
         query = None, 
         database = 'coffee', 
         schema = 'coffee', 
-        user = 'escdata' ):
+        user = 'postgres' ):
     
-    cur = getcursor( 'postgres', user, True )
+    cur = getcursor( database, user, True )
 
     try:
         cur.execute( 'DROP DATABASE IF EXISTS {0};'.format( database ))
@@ -155,9 +165,9 @@ ALTER TABLE {schema}.{table}
 
 
 # Not really necesary. Runs setup() assuming the existence of a query
-def builddatabase( query, database = 'coffee', schema = 'coffee' ):
-    cur = setup( query, database, schema )
-    return cur
+# def builddatabase( query, database = 'coffee', schema = 'coffee' ):
+#     cur = setup( query, database, schema )
+#     return cur
 
 
 # Attempt at a data processor prior to insertion into database. Current issue 
@@ -205,6 +215,9 @@ def processor( s, datatype, columnname ):
 # mains script...loosely
 def main( 
     dirpath,
+    database = 'coffee',
+    schema = 'coffee',
+    user = 'escdata',
     writetofile = False, 
     build = True,
     insertdata = True ):
@@ -221,7 +234,7 @@ def main(
             f.write( setupquery )
 
     if build:
-        cur = builddatabase( setupquery )
+        cur = setup( setupquery, database, schema, user )
 
         if insertdata:
             datapath = dirpath + '/../data/arabica_data_cleaned.csv'
@@ -342,11 +355,11 @@ class db( pg.extensions.cursor ):
 
 args = sys.argv
 
-if len( args ) != 3:
+if len( args ) < 2:
     print( 'What do you want to do?' )
     exit()
 
-dirpath, fstring = args[1:]
+fstring = args[1]
 
 f = vars().get( fstring )
 
@@ -354,7 +367,25 @@ if f is None:
     print( "The function '{}' does not exist.".format( fstring ))
     exit()
 
-f( dirpath )
+
+parameters = {}
+for parameter in args[2:]:
+    if '=' not in parameter:
+        print( 'You have to specify the variable name along with the value.' )
+        exit()
+
+    key, value = parameter.split( '=' )
+
+    parameters[key] = value
+
+try:
+    f( **parameters )
+
+except TypeError as e:
+    print( 'Parameter Names:\n' )
+    for var in f.__code__.co_varnames[:f.__code__.co_argcount]:
+        print( '\t' + var ) 
+
 
 
 
