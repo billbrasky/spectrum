@@ -1,5 +1,15 @@
-setup:
-	sudo apt-get install postgresql libpq-dev postgresql-client postgresql-client-common
-	sudo pip3 install psycopg2
-build: worker/main.py
-	python3 worker/main.py worker main
+IMAGE   = spectrum/database
+VERSION = $(shell cat VERSION)
+
+ENV     = --env-file .envrc
+VOLUMES = -v $(PWD)/:/var/lib/postgresql/data
+PORTS   = -p 5432:5432
+
+build:
+	docker build -t $(IMAGE):$(VERSION) .
+
+run:
+	docker run $(ENV) $(PORTS) $(VOLUMES) $(IMAGE):$(VERSION)
+
+connect:
+	psql -h 127.0.0.1 -U spectrum_coffee
