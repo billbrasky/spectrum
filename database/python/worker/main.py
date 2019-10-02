@@ -121,9 +121,9 @@ ALTER TABLE {schema}.{table}
     datatypes = {}
     for tablename, table in tables.items(): # < 3.6 order is not preserved
         insert = """INSERT INTO {0}.{1}
-    ({{domain}})
+    (\n\t\t{{domain}}\n\t)
     VALUES
-    ({{values}});\n\n""".format( schema, tablename )
+    (\n\t\t{{values}}\n\t);\n\n""".format( schema, tablename )
 
         td = []
         temp = { 'domain': [], 'values': [] }
@@ -169,7 +169,7 @@ ALTER TABLE {schema}.{table}
 
         query += writetable( tablename, td ) + '\n\n'
 
-        temp = {x: ','.join( y ) for x, y in temp.items() }
+        temp = {x: ',\n\t\t'.join( y ) for x, y in temp.items() }
         insertion += insert.format( **temp )
     query += foreignkeys
 
