@@ -9,7 +9,7 @@ build:
 	docker build -t $(IMAGE):$(VERSION) .
 
 run:
-	docker run $(ENV) $(PORTS) $(VOLUMES) $(IMAGE):$(VERSION)
+	echo "docker run $(ENV) $(PORTS) $(VOLUMES) $(IMAGE):$(VERSION)"
 
 connect:
 	psql -h 127.0.0.1 -U spectrum_coffee
