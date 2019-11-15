@@ -1,11 +1,15 @@
 FROM python:3.7-alpine
 
-WORKDIR /app
+COPY . /app
 
+WORKDIR /app
 
 COPY requirements.txt requirements.txt
 
-RUN pip install -r requirments.txt
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev && \
+    apk add postgresql-dev
 
-COPY . .
+RUN pip install -r requirements.txt
+
 
