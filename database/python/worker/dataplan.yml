@@ -1,0 +1,217 @@
+definitions:
+  varchar: &vc
+    type: varchar
+    notNull: true
+
+  varcharNullable: &vcnull
+    <<: *vc
+    notNull: false
+  
+  int: &int
+    type: integer
+    notNull: true
+
+  float: &float
+    type: float
+    default: null
+
+  review_category: &review_category
+    type: NUMERIC(4,2)
+    notNull: true
+
+  date: &date
+    type: date
+    default: null
+
+  fk: &fk
+    type: SERIAL
+    fk: true
+
+  pk: &pk
+    type: SERIAL
+    pk: true
+
+tables:
+  review_cupping:
+    id: *pk
+    acidity:
+      <<: *review_category
+      origin: Acidity
+    aftertaste:
+      <<: *review_category
+      origin: Aftertaste
+    aroma:
+      <<: *review_category
+      origin: Aroma
+    balance:
+      <<: *review_category
+      origin: Balance
+    body:
+      <<: *review_category
+      origin: Body
+    cleanliness:
+      <<: *review_category
+      origin: Clean_Cup
+    flavor:
+      <<: *review_category
+      origin: Flavor
+    sweetness:
+      <<: *review_category
+      origin: Sweetness
+    cupper_points:
+      <<: *review_category
+      origin: Cupper_Points
+    total_cup_point:
+      <<: *review_category
+      type: NUMERIC(5,2)
+      origin: Total_Cup_Points
+    uniformity:
+      <<: *review_category
+      origin: Uniformity
+
+  review_green:
+    id: *pk
+    defects_1:
+      <<: *int
+      origin: Category_One_Defects
+    defects_2:
+      <<: *int
+      origin: Category_Two_Defects
+    color:
+      <<: *vcnull
+      length: 12
+      origin: Color
+    moisture:
+      <<: *review_category
+      origin: Moisture
+    quakers:
+      <<: *vcnull
+      length: 2
+      origin: Quakers
+    processing_method:
+      <<: *vcnull
+      legnth: 25
+      origin: Processing_Method
+
+  certificate:
+    id: *pk
+    address: &address
+      <<: *vc
+      length: 40
+      origin: Certification_Address
+    body:
+      <<: *vc
+      length: 100
+      origin: Certification_Body
+    contact: 
+      <<: *address
+      origin: Certification_Contact
+
+  altitude_meters:
+    id: *pk
+    high: &high
+      <<: *vcnull
+      length: 9
+      origin: altitude_high_meters
+    low:
+      <<: *high
+      origin: altitude_low_meters
+    mean:
+      <<: *high
+      origin: altitude_mean_meters
+
+  altitude:
+    id: *pk
+    altitude:
+      <<: *vcnull
+      length: 41
+      origin: Altitude
+    unit:
+      <<: *vc
+      length: 2
+      origin: unit_of_measurement
+
+  farm:
+    id: *pk
+    owner: &owner
+      <<: *vcnull
+      length: 50
+      origin: Owner
+    owner_1:
+      <<: *owner
+      origin: Owner_1
+    company:
+      <<: *vcnull
+      length: 78
+      origin: Company
+    country:
+      <<: *vcnull
+      length: 28
+      origin: Country_of_Origin
+    name:
+      <<: *vcnull
+      length: 73
+      origin: Farm_Name
+    ico:
+      <<: *vcnull
+      length: 40
+      origin: ICO_Number
+    country_partner:
+      <<: *vc
+      length: 85
+      origin: In_Country_Partner
+    lot_number:
+      <<: *vcnull
+      length: 71
+      origin: Lot_Number
+    mill:
+      <<: *vcnull
+      length: 77
+      origin: Mill
+    region:
+      <<: *vcnull
+      length: 76
+      origin: Region
+    producer:
+      <<: *vcnull
+      length: 100
+      origin: Producer
+#    altitude_meters_id: *fk
+#    altitude_id: *fk
+#    certificate_id: *fk
+
+  beans:
+    id: *pk
+    bagweight:
+      <<: *vc
+      length: 8
+      origin: Bag_Weight
+    number_of_bags:
+      <<: *int
+      notNull: false
+      origin: Number_of_Bags
+    species:
+      <<: *vc
+      length: 7
+      origin: Species
+    variety:
+      <<: *vcnull
+      length: 21
+      origin: Variety
+    expiration: &expiration_date
+      <<: *vc
+      length: 20
+      origin: Expiration
+    grading_date:
+      <<: *expiration_date
+      origin: Grading_Date
+    harvest_year:
+      <<: *vcnull
+      length: 24
+      origin: Harvest_Year
+#    review_cupping_id: *fk
+#    review_green_id: *fk
+#    farm_id: *fk
+
+
+
