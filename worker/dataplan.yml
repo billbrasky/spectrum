@@ -7,7 +7,7 @@ definitions:
     fk: true
 
   pk: &pk
-    type: int
+    type: SERIAL
     pk: true
 
 tables:

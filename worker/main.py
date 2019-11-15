@@ -120,8 +120,8 @@ ALTER TABLE {schema}.{table}
 
     return query, insertion
 
-def builddatabase( query, database = 'coffee', schema = 'coffee' ):
-    cur = setup( query, database, schema )
+def builddatabase( query, database = 'coffee', schema = 'coffee', user = 'escadmin' ):
+    cur = setup( query, database, schema, user )
     return cur
 
 def insertdata( cur ):
@@ -135,15 +135,18 @@ def insertdata( cur ):
 
             query = insertion.format( **datapoint )
 
+            print( query )
             cur.execute( query )
 
-#            print( insert )
 
 
 dataplan = getdataplan()
 query, insertion = processdataplan( dataplan )
 
-cur = builddatabase( query )
+with open( 'query.sql', 'w' ) as f:
+    f.write( query )
+
+cur = builddatabase( query, user = 'dsuar' )
 
 insertdata( cur )
 
